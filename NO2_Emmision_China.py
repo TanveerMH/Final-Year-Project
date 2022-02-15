@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import os
 
 
-os.chdir("F:/SEM 8/FYP 2/NO2")
+os.chdir("C:/Users/Tanveer/Desktop/NO2")
 
 # Import the netCDF data
-ncd_file = Dataset('PreCovidMalaysia_01122019.nc', 'r')
+ncd_file = Dataset('posCovidChina.nc', 'r')
 
 # Saving the data to lat, long, and no2_data variables 
 lat = ncd_file.groups['PRODUCT'].variables['latitude'][0, :, :]
@@ -28,5 +28,36 @@ fill_val = fill_value*1000000
 
 # Replacing the fill values/ missing values by 'nan'
 no2_em = np.array(no2_data)*1000000
+no2_em[no2_em == fill_val] = np.nan
+no2_data = no2_em
+
+# Creating the basemap
+
+m = Basemap(projection = 'cyl', resolution = 'i', 
+            llcrnrlat = -90, 
+            urcrnrlat = 90,
+            llcrnrlon = -180,
+            urcrnrlon = 180)  
+
+m.drawcoastlines(linewidth = 1)
+m.drawcountries(linewidth = 1)
 
 
+cmap = plt.cm.get_cmap('jet')
+cmap.set_under('w')
+
+m.pcolormesh(lon, lat, no2_data, latlon = True, vmin =0 , vmax = 500, cmap = cmap)
+color_bar = m.colorbar()
+color_bar.set_label('μ.mol / Sq.meter')
+plt.autoscale()
+
+axes = plt.gca()
+axes.set_xlim([80, 135])
+axes.set_ylim([15, 50])
+
+plt.title('Nitrogen Dioxide Emissions over China on 16 March, 2020')
+
+fig = plt.gcf()
+fig.savefig('NO2_20200316.jpg')
+
+plt.show()
